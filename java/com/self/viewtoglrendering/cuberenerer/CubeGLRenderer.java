@@ -12,6 +12,7 @@ import com.self.viewtoglrendering.ViewToGLRenderer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -381,12 +382,14 @@ public class CubeGLRenderer extends ViewToGLRenderer {
         // Position the eye in front of the origin.
         final float eyeX = 0.0f;
         final float eyeY = 0.0f;
-        final float eyeZ = -0.5f;
+        //final float eyeZ = -0.5f;
+        final float eyeZ = 3;
 
         // We are looking toward the distance
         final float lookX = 0.0f;
         final float lookY = 0.0f;
-        final float lookZ = -5.0f;
+        //final float lookZ = -5.0f;
+        final float lookZ = 0;
 
         // Set our up vector. This is where our head would be pointing were we holding the camera.
         final float upX = 0.0f;
@@ -397,6 +400,7 @@ public class CubeGLRenderer extends ViewToGLRenderer {
         // NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination of a model and
         // view matrix. In OpenGL 2, we can keep track of these matrices separately if we choose.
         Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+        //System.out.println("mViewMatrix = " + Arrays.toString(mViewMatrix));
 
         final String vertexShader = getVertexShader();
         final String fragmentShader = getFragmentShader();
@@ -422,18 +426,29 @@ public class CubeGLRenderer extends ViewToGLRenderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         super.onSurfaceChanged(gl, width, height);
         GLES20.glViewport(0, 0, width, height);
+        //System.out.println("onSurfaceChanged width = " + width + " height = " + height);
 
         // Create a new perspective projection matrix. The height will stay the same
         // while the width will vary as per aspect ratio.
         final float ratio = (float) width / height;
-        final float left = -ratio;
-        final float right = ratio;
-        final float bottom = -1.0f;
-        final float top = 1.0f;
+//        final float left = -ratio;
+//        final float right = ratio;
+        final float left = -0.5f;
+        final float right = 0.5f;
+        final float bottom = -0.5f;
+        final float top = 0.5f;
+//        final float bottom = -ratio;
+//        final float top = ratio;
         final float near = 1.0f;
         final float far = 10.0f;
 
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+        System.out.println("mProjectionMatrix = " + Arrays.toString(mProjectionMatrix));
+    }
+
+    boolean isRotate = false;
+    public void updateRotate() {
+        isRotate = !isRotate;
     }
 
     @Override
@@ -445,6 +460,10 @@ public class CubeGLRenderer extends ViewToGLRenderer {
         // Do a complete rotation every 10 seconds.
         long time = SystemClock.uptimeMillis() % 10000L;
         float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+        //float angleInDegrees = 0;
+        if (!isRotate) {
+            angleInDegrees = 0;
+        }
 
         // Set our per-vertex lighting program.
         GLES20.glUseProgram(mProgramHandle);
@@ -482,17 +501,21 @@ public class CubeGLRenderer extends ViewToGLRenderer {
 
         // Calculate position of the light. Rotate and then push into the distance.
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -4.0f);
+        //Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -4.0f);
         Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+        //Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 1.5f);
+        //System.out.println("mLightModelMatrix = " + Arrays.toString(mLightModelMatrix));
 
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
 
 
         Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -3.3f);
+        //Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -3.3f);
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 0.0f);
         Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 1.0f, 1.0f, 0.0f);
+        //System.out.println("mModelMatrix = " + Arrays.toString(mModelMatrix));
         drawCube();
 
         // Draw a point to indicate the light.
