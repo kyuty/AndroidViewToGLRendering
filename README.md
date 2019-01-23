@@ -31,3 +31,8 @@ Also some routine code snippets were used from Lesson 4 of this project: https:/
 # Feedback
 
 Feel free to leave a comment if rendering is not working as expected on any particular device
+
+# Gradle
+dependencies {
+    implementation 'com.android.support:appcompat-v7:21.0.3'
+}
